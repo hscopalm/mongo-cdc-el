@@ -1,0 +1,8 @@
+name: mongo-stream-cdc
+services:
+    mongo:
+        container_name: mongo-host
+        ports:
+            - 27017:27017
+        image: mongo:latest
+        command: --bind_ip_all
