@@ -17,8 +17,8 @@ fake = Faker()
 
 # Generate and insert fake data
 start_time = time.time()
-while time.time() - start_time < 60:
-
+# while time.time() - start_time < 60:
+while True:
     # Generate customer data
     customer = {"name": fake.name(), "email": fake.email(), "address": fake.address()}
     customer_id = customers_col.insert_one(customer).inserted_id
@@ -48,7 +48,24 @@ while time.time() - start_time < 60:
             returns_col.insert_one(return_data)
             print(f"Inserted return: {return_data}")
 
+    # Delete records for customer with 5% chance
+    if random.random() <= 0.05:
+        customers_col.delete_one({"_id": customer_id})
+        orders_col.delete_many({"customer_id": customer_id})
+        returns_col.delete_many(
+            {
+                "order_id": {
+                    "$in": [
+                        order["_id"]
+                        for order in orders_col.find({"customer_id": customer_id})
+                    ]
+                }
+            }
+        )
+        print(f"Deleted records for customer: {customer_id}")
+
     print("---")
+    time.sleep(0.05)
 
 # Close MongoDB connection
 client.close()
